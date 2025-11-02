@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusVerse - Your Campus Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">CampusVerse</h1>
+            <div class="header-actions">
+                <a href="https://webportal.jiit.ac.in/jiitwebkiosk/" target="_blank" class="portal-link">
+                    <i class="fas fa-graduation-cap"></i> JIIT Portal
+                    <a href="feed.html">Feed</a>
+
+                </a>
+                <div class="profile-icon" onclick="showProfile()">
+                    <img id="headerProfilePic" src="https://ui-avatars.com/api/?name=Mahi&background=667eea&color=fff&size=128" alt="Profile">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard" id="dashboard">
+        <div class="dashboard-grid">
+            <!-- Feed Card -->
+            <div class="card" onclick="openFeed()">
+                <div class="card-icon">📰</div>
+                <h3>Feed</h3>
+                <p class="preview-text" id="feedPreview">Loading...</p>
+            </div>
+
+            <!-- Map Card -->
+            <div class="card" onclick="openMap()">
+                <div class="card-icon">🗺</div>
+                <h3>Campus Map</h3>
+                <p class="preview-text">Explore campus locations</p>
+            </div>
+
+            <!-- Study Material Card -->
+            <div class="card" onclick="openStudyMaterial()">
+                <div class="card-icon">📚</div>
+                <h3>Study Material</h3>
+                <p class="preview-text">PYQs & Lecture Notes</p>
+            </div>
+
+            <!-- Events Card -->
+            <div class="card" onclick="openEvents()">
+                <div class="card-icon">📅</div>
+                <h3>Events</h3>
+                <p class="preview-text">Upcoming campus events</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Profile Page -->
+    <div class="page" id="profilePage">
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-pic-container">
+                    <img id="profilePic" src="https://ui-avatars.com/api/?name=Mahi&background=667eea&color=fff&size=128" alt="Profile Picture">
+                    <input type="file" id="profilePicInput" accept="image/*" style="display:none">
+                    <button class="change-pic-btn" onclick="changeProfilePic()"><i class="fas fa-camera"></i></button>
+                </div>
+                <h2 id="profileName">Mahi</h2>
+                <p class="profile-email">mahi@jiit.ac.in</p>
+            </div>
+
+            <div class="profile-section">
+                <h3>Bio</h3>
+                <textarea id="bioText" placeholder="Tell us about yourself..." maxlength="200">Computer Science student | Tech enthusiast | Love coding and coffee ☕</textarea>
+                <button class="btn-primary" onclick="saveBio()">Save Bio</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>Friends (<span id="friendCount">0</span>)</h3>
+                <div class="friends-list" id="friendsList"></div>
+            </div>
+
+            <div class="profile-footer">
+                <button class="settings-btn" onclick="openSettings()">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feed Page -->
+    <div class="page" id="feedPage">
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="split-view">
+            <div class="split-left">
+                <h2><i class="fas fa-newspaper"></i> Posts</h2>
+                <div id="trendingHashtags" style="margin-bottom:12px"></div>
+                <div class="posts-container" id="postsContainer"></div>
+            </div>
+            <div class="split-right">
+                <h2><i class="fas fa-comments"></i> Group Chats</h2>
+                <div class="chats-container" id="chatsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Page -->
+    <div class="page" id="mapPage">
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="map-container">
+            <h2><i class="fas fa-map-marked-alt"></i> Campus Map</h2>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Study Material Page -->
+    <div class="page" id="studyPage">
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="study-container">
+            <h2><i class="fas fa-book"></i> Study Material</h2>
+            <div class="study-tabs">
+                <button class="tab-btn active" onclick="switchStudyTab('pyqs')">Previous Year Questions</button>
+                <button class="tab-btn" onclick="switchStudyTab('notes')">Lecture Notes</button>
+            </div>
+            <div class="study-content" id="studyContent"></div>
+        </div>
+    </div>
+
+    <!-- Events Page -->
+    <div class="page" id="eventsPage">
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="events-container">
+            <div class="events-header">
+                <h2><i class="fas fa-calendar-alt"></i> Campus Events</h2>
+                <button class="btn-primary" onclick="openAddEventModal()"><i class="fas fa-plus"></i> Add Event</button>
+            </div>
+            <div class="events-layout">
+                <div id="calendar"></div>
+                <div class="upcoming-events">
+                    <h3>Upcoming Events</h3>
+                    <div id="upcomingEventsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <span class="close-btn" onclick="closeSettings()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="themeToggle">
+                        <i class="fas fa-moon"></i> Dark Mode
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <button class="btn-secondary" onclick="updateAccount()">
+                        <i class="fas fa-user-edit"></i> Update Account
+                    </button>
+                </div>
+                <div class="setting-item">
+                    <button class="btn-danger" onclick="deleteAccount()">
+                        <i class="fas fa-trash-alt"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal" id="addEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-plus"></i> Add Event</h3>
+                <span class="close-btn" onclick="closeAddEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addEventForm" onsubmit="addEvent(event)">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime">Time</label>
+                        <input type="time" id="eventTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventLocation">Location</label>
+                        <input type="text" id="eventLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDescription">Description</label>
+                        <textarea id="eventDescription" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Event</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chatbot -->
+    <div class="chatbot-icon" onclick="toggleChatbot()">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <h4><i class="fas fa-robot"></i> CampusGPT</h4>
+            <span class="close-btn" onclick="toggleChatbot()">&times;</span>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="bot-message">
+                <p>Hi Mahi! I'm CampusGPT, your AI assistant for JIIT Noida. Ask me about events, attendance, study materials, campus buildings, or study tips!</p>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatInput" placeholder="Ask me anything..." onkeypress="handleChatKeypress(event)">
+            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Group Chat Window -->
+    <div class="group-chat-window" id="groupChatWindow">
+        <div class="group-chat-header">
+            <button class="back-btn small" id="closeGroupChat">&larr; Back</button>
+            <div class="group-chat-title" id="groupChatTitle">Group Chat</div>
+        </div>
+        <div class="group-chat-messages" id="groupChatMessages"></div>
+        <div class="group-chat-input">
+            <input type="text" id="groupChatInput" placeholder="Type a message" onkeypress="handleGroupKeypress(event)">
+            <button id="sendGroupBtn">Send</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="script.js"></script>
+
+    <style>
+    /* Group chat styles */
+    .group-chat-window {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        width: 360px;
+        max-height: 80vh;
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        overflow: hidden;
+        z-index: 2000;
+    }
+    .group-chat-window.active { display: flex; }
+    .group-chat-header{
+        background:#667eea;
+        color:white;
+        padding:10px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .group-chat-header .small{ background: transparent; border:none; color:white; cursor:pointer; font-size:0.9rem }
+    .group-chat-messages{ padding:12px; overflow:auto; background:#f6f8fb; flex:1 }
+    .group-chat-messages .msg{ margin:8px 0; max-width:80%; padding:8px 10px; border-radius:10px; color:#111; }
+    .group-chat-messages .msg.me{ background:#dcf8c6; margin-left:auto; color:#111 }
+    .group-chat-messages .msg.them{ background:white; color:#111 }
+    .group-chat-input{ display:flex; gap:8px; padding:8px; border-top:1px solid #eee }
+    .group-chat-input input{ flex:1; padding:8px; border-radius:8px; border:1px solid #ccc }
+    .group-chat-input button{ background:#667eea; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer }
+    </style>
+
+    <!-- JIIT Shelf floating widget + modal styles -->
+    <style>
+    .shelf-widget{ position: fixed; left: 20px; bottom: 20px; z-index:2100 }
+    .shelf-widget button{ background:#ffb86b; border:none; padding:10px 14px; border-radius:20px; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,0.12); font-weight:600 }
+
+    .shelf-modal{ position: fixed; left:50%; top:50%; transform: translate(-50%,-50%); width: 90%; max-width: 1000px; height: 80vh; background: white; border-radius:10px; box-shadow: 0 12px 40px rgba(0,0,0,0.3); z-index:2200; display:none; flex-direction:column; overflow:hidden }
+    .shelf-modal.active{ display:flex }
+    .shelf-modal-header{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#667eea; color:white }
+    .shelf-modal-header button{ background:transparent; border:none; color:white; font-size:1.4rem; cursor:pointer }
+    .shelf-modal iframe{ flex:1; border:none; width:100%; height:100%; }
+    .shelf-modal-footer{ padding:8px; text-align:right; background:#fafafa }
+    .shelf-modal-footer button{ background:#667eea; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer }
+    </style>
+
+    <!-- JIIT Shelf widget and modal -->
+    <div class="shelf-widget" id="shelfWidget">
+        <button id="openShelfBtn" title="Open JIIT Shelf">JIIT Shelf</button>
+    </div>
+
+    <div class="shelf-modal" id="shelfModal" aria-hidden="true">
+        <div class="shelf-modal-header">
+            <div>JIIT Shelf Preview</div>
+            <div>
+                <button id="openShelfNew">Open in new tab</button>
+                <button id="closeShelfBtn" aria-label="Close">&times;</button>
+            </div>
+        </div>
+    <iframe id="shelfIframe" src="https://jiitshelf.vercel.app/" title="JIIT Shelf Preview"></iframe>
+        <div class="shelf-modal-footer">
+            <small style="color:#666">Preview: tap "Open in new tab" to visit the live site.</small>
+        </div>
+    </div>
+
+    <style>
+    /* Hashtag pills (left aligned above posts) */
+    #trendingHashtags { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-start; width:100%; margin:0 0 8px 0 }
+    .hashtag-btn { background:#eef6ff; color:#1a73e8; border:1px solid #d6e9ff; padding:6px 10px; border-radius:20px; cursor:pointer; font-weight:600 }
+    .hashtag-btn:hover{ background:#e0f0ff }
+    .hashtag-active { background:#1a73e8; color:white; border-color:#1558b0 }
+    .hashtag-clear { margin-left:8px; background:transparent; border:none; color:#666; cursor:pointer }
+    </style>
+</body>
+</html>

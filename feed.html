@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campverse Feed</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f8fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      background-color: #1da1f2;
+      color: white;
+      text-align: center;
+      padding: 1rem 0;
+      font-size: 1.6rem;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .feed-container {
+      width: 90%;
+      max-width: 600px;
+      margin-top: 20px;
+    }
+
+    .post {
+      background: white;
+      border-radius: 15px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .post:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .profile-pic {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background-color: #1da1f2;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+    }
+
+    .post h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #111;
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      color: #888;
+      margin-left: 5px;
+    }
+
+    .post p {
+      color: #333;
+      margin: 0.6rem 0;
+      white-space: pre-wrap;
+    }
+
+    .post img {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 8px;
+      object-fit: cover;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      color: #ff4d4d;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .delete-btn:hover {
+      color: #d93636;
+    }
+
+    .like-section {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .like-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.4rem;
+      transition: transform 0.2s ease;
+      color: #555;
+    }
+
+    .like-btn.liked {
+      color: #e0245e;
+      transform: scale(1.2);
+    }
+
+    .like-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .like-count {
+      margin-left: 6px;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .add-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background-color: #1da1f2;
+      color: white;
+      font-size: 2rem;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .add-btn:hover {
+      transform: scale(1.1);
+      background-color: #0d8ae2;
+    }
+
+    #newPostForm {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 600px;
+      margin-top: 1rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    input[type="file"] {
+      border: none;
+    }
+
+    button.submit-btn {
+      background: #1da1f2;
+      color: white;
+      border: none;
+      padding: 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button.submit-btn:hover {
+      background: #0d8ae2;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Campverse Feed</header>
+
+  <div class="feed-container" id="feedContainer"></div>
+
+  <div id="newPostForm">
+    <input type="text" id="postTitle" placeholder="Your name..." required />
+    <textarea id="postContent" rows="3" placeholder="What's on your mind?" required></textarea>
+    <input type="file" id="postImage" accept="image/*" />
+    <button class="submit-btn" onclick="addPost()">Post</button>
+  </div>
+
+  <button class="add-btn" id="addPostBtn">+</button>
+
+  <script>
+    const addPostBtn = document.getElementById('addPostBtn');
+    const newPostForm = document.getElementById('newPostForm');
+    const feedContainer = document.getElementById('feedContainer');
+
+    addPostBtn.addEventListener('click', () => {
+      newPostForm.style.display =
+        newPostForm.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // Load saved posts
+    window.onload = function() {
+      const savedPosts = JSON.parse(localStorage.getItem('campversePosts')) || [];
+      savedPosts.forEach((post, index) => {
+        displayPost(post, index);
+      });
+    };
+
+    function addPost() {
+      const title = document.getElementById('postTitle').value.trim();
+      const content = document.getElementById('postContent').value.trim();
+      const imageInput = document.getElementById('postImage');
+      const timestamp = new Date().toLocaleString();
+
+      if (!title || !content) {
+        alert('Please fill out both fields!');
+        return;
+      }
+
+      if (imageInput.files && imageInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          saveAndDisplayPost(title, content, e.target.result, timestamp);
+        };
+        reader.readAsDataURL(imageInput.files[0]);
+      } else {
+        saveAndDisplayPost(title, content, null, timestamp);
+      }
+    }
+
+    function saveAndDisplayPost(title, content, image, time) {
+      const post = { title, content, image, time, likes: 0, liked: false };
+      const existingPosts = JSON.parse(localStorage.getItem('campversePosts')) || [];
+      existingPosts.unshift(post);
+      localStorage.setItem('campversePosts', JSON.stringify(existingPosts));
+
+      displayPost(post, 0);
+
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postImage').value = '';
+      newPostForm.style.display = 'none';
+    }
+
+    function displayPost(postData, index) {
+      const post = document.createElement('div');
+      post.classList.add('post');
+      const initials = postData.title.charAt(0).toUpperCase();
+
+      post.innerHTML = `
+        <button class="delete-btn" title="Delete post">&times;</button>
+        <div class="post-header">
+          <div class="profile-pic">${initials}</div>
+          <div>
+            <h3>${postData.title} <span class="timestamp">• ${postData.time}</span></h3>
+          </div>
+        </div>
+        <p>${postData.content}</p>
+        ${postData.image ? `<img src="${postData.image}" alt="Post image">` : ""}
+        <div class="like-section">
+          <button class="like-btn ${postData.liked ? 'liked' : ''}">&#10084;</button>
+          <span class="like-count">${postData.likes}</span>
+        </div>
+      `;
+
+      // Like button functionality
+      const likeBtn = post.querySelector('.like-btn');
+      const likeCount = post.querySelector('.like-count');
+      likeBtn.addEventListener('click', () => {
+        postData.liked = !postData.liked;
+        postData.likes += postData.liked ? 1 : -1;
+        likeBtn.classList.toggle('liked');
+        likeCount.textContent = postData.likes;
+        updateStorage();
+      });
+
+      // Delete post functionality
+      post.querySelector('.delete-btn').addEventListener('click', () => {
+        deletePost(index);
+      });
+
+      feedContainer.prepend(post);
+    }
+
+    function deletePost(index) {
+      const savedPosts = JSON.parse(localStorage.getItem('campversePosts')) || [];
+      savedPosts.splice(index, 1);
+      localStorage.setItem('campversePosts', JSON.stringify(savedPosts));
+      refreshFeed();
+    }
+
+    function refreshFeed() {
+      feedContainer.innerHTML = '';
+      const updatedPosts = JSON.parse(localStorage.getItem('campversePosts')) || [];
+      updatedPosts.forEach((post, index) => displayPost(post, index));
+    }
+
+    function updateStorage() {
+      const posts = [];
+      document.querySelectorAll('.post').forEach((postElem, idx) => {
+        const title = postElem.querySelector('h3').textContent.split("•")[0].trim();
+        const content = postElem.querySelector('p').textContent;
+        const img = postElem.querySelector('img')?.src || null;
+        const time = postElem.querySelector('.timestamp').textContent.replace("• ", "");
+        const likeCount = parseInt(postElem.querySelector('.like-count').textContent);
+        const liked = postElem.querySelector('.like-btn').classList.contains('liked');
+        posts.unshift({ title, content, image: img, time, likes: likeCount, liked });
+      });
+      localStorage.setItem('campversePosts', JSON.stringify(posts));
+    }
+  </script>
+</body>
+</html>
