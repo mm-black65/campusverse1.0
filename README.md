@@ -70,13 +70,20 @@ External Libraries (CDN)
 Leaflet.js v1.9.4: Interactive maps
 FullCalendar.js v6.1.10: Event calendar
 Font Awesome v6.4.0: Icons throughout the interface
+
 File Structure
 /
+
 ├── index.html          # Main HTML structure
+
 ├── style.css           # All styling and theme definitions
+
 ├── script.js           # Core functionality and mock data
+
 ├── assets/             # Folder for static assets (currently empty)
+
 ├── .gitignore          # Git ignore file
+
 └── replit.md           # This documentation file
 
 Mock Data
