@@ -155,7 +155,7 @@ Grade calculator and GPA tracker
 Running the Project
 The project runs on a simple Python HTTP server on port 5000.
 
-Workflow: CampusVerse Portal Command: python -m http.server 5000 Access: Open the webview to see the portal
+Workflow: CampusVerse Portal Command: http://127.0.0.1:5501/index.html: Open the webview to see the portal
 
 No build process or dependencies installation required - all libraries are loaded via CDN.
 
